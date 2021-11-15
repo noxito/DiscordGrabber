@@ -172,6 +172,10 @@ public class Main {
                 File file = new File(path[1]);
 
                 for (String pathname : file.list()) {
+                    if (pathname.equals("LOCK")) { // this file will give us error so just don't read it reduce search time a bit
+                        if (debug) print("Ignore LOCK file in " + path[1]);
+                        continue;
+                    }
                     if (debug) {
                         print("Searching: " + path[1] +System.getProperty("file.separator")+ pathname);
                     }
@@ -180,7 +184,7 @@ public class Main {
                     BufferedReader br = new BufferedReader(new InputStreamReader(in));
                     String strLine;
                     while ((strLine = br.readLine()) != null) {
-                        Pattern p = Pattern.compile("[\\w]{24}\\.[\\w]{6}\\.[\\w]{27}");
+                        Pattern p = Pattern.compile("[\\w]{24}\\.[\\w]{6}\\.[\\w]{27}|mfa\\.[\\w]{84}");
                         Matcher m = p.matcher(strLine);
 
                         while (m.find()) {
