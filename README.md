@@ -8,6 +8,8 @@ Discord Grabber v2 is the second version of a discord token logger, improvements
 - Has embed and raw text
 - Checks for tokens in multiple locations
 
+Contact / Help: https://discord.gg/QdMqVgcfbg
+
 ## Features
 Current features include:
 
