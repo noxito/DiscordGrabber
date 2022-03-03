@@ -9,7 +9,7 @@ Discord Grabber v2 is the second version of a discord token logger, improvements
 - Checks for tokens in multiple locations
 
 ## Why should I use this fork?
-This fork does not ```not``` uses a ```.txt``` file for configuration.
+This fork does ```not``` uses a ```.txt``` file for configuration.
 You should configure it directly in the ```Main.java```.
 It's easier to hide it in your application.
 Remember: ```I am *not* responsible for your actions!```
